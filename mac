@@ -111,25 +111,18 @@ fi
 fancy_echo "Updating Homebrew formulae ..."
 brew update --force # https://github.com/Homebrew/brew/issues/1151
 brew bundle --file=- <<EOF
-tap "thoughtbot/formulae"
 tap "homebrew/services"
-tap "universal-ctags/universal-ctags"
+tap "stve/formulae"
 
 # Unix
-brew "universal-ctags", args: ["HEAD"]
 brew "git"
 brew "openssl"
-brew "rcm"
-brew "reattach-to-user-namespace"
 brew "the_silver_searcher"
-brew "tmux"
-brew "vim"
 brew "watchman"
 brew "zsh"
 
 # Heroku
 brew "heroku"
-brew "parity"
 
 # GitHub
 brew "hub"
@@ -137,12 +130,13 @@ brew "hub"
 # Image manipulation
 brew "imagemagick"
 
-# Testing
-brew "qt@5.5" if MacOS::Xcode.installed?
+# MacOS
+brew "mas"
 
 # Programming languages and package managers
 brew "libyaml" # should come after openssl
 brew "node"
+brew "nvm"
 brew "rbenv"
 brew "ruby-build"
 brew "yarn"
@@ -150,13 +144,53 @@ brew "yarn"
 # Databases
 brew "postgres", restart_service: :changed
 brew "redis", restart_service: :changed
-EOF
+brew "mongodb", restart_service: :changed
+brew "memcached", restart_service: :changed
+brew "elasticsearch", restart_service: :changed
 
-if brew list | grep --silent "qt@5.5"; then
-  fancy_echo "Symlink qmake binary to /usr/local/bin for Capybara Webkit..."
-  brew unlink qt@5.5
-  brew link --force qt@5.5
-fi
+# Personal homebrew packages
+brew "scar"
+brew "tn"
+
+# Homebrew-Cask
+cask "alfred"
+cask "appcleaner"
+cask "atom"
+cask "cloudapp"
+cask "dropbox"
+cask "firefox"
+cask "flux"
+cask "github-desktop"
+cask "google-chrome"
+cask "hocus-focus"
+cask "rowanj-gitx"
+cask "imageoptim"
+cask "iterm2"
+cask "keybase"
+cask "mongotron"
+cask "paw"
+cask "popsql"
+cask "postico"
+cask "quitter"
+cask "skype"
+
+# MacOS App Store
+mas "Amphetamine", id: 937984704
+mas "Aware", id: 1082170746
+mas "BetterSnapTool", id: 417375580
+mas "Byword", id: 420212497
+mas "Marked 2", id: 890031187
+mas "Pixelmator", id: 407963104
+mas "Redacted", id: 984968384
+mas "Reeder", id: 880001334
+mas "Slack", id: 803453959
+mas "Soulver", id: 413965349
+mas "The Unarchiver", id: 425424353
+mas "Things3", id: 904280696
+mas "Tweetbot", id: 557168941
+mas "Xcode", id: 497799835
+mas "1Password", id: 443987910
+EOF
 
 fancy_echo "Update heroku binary..."
 brew unlink heroku
