@@ -1,6 +1,21 @@
 Laptop
 ======
 
+This is my personal fork of Thoughtbot's [laptop](https://raw.githubusercontent.com/thoughtbot/laptop) project.
+
+Install
+-------
+
+Download the script:
+
+```sh
+curl --remote-name https://raw.githubusercontent.com/stve/laptop/master/mac
+```
+
+Original README can be found below.
+
+---
+
 Laptop is a script to set up an macOS laptop for web and mobile development.
 
 It can be run multiple times on the same machine safely.
