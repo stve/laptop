@@ -134,6 +134,7 @@ brew "imagemagick"
 brew "mas"
 
 # Programming languages and package managers
+brew "go"
 brew "libyaml" # should come after openssl
 brew "node"
 brew "nvm"
