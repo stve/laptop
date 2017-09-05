@@ -149,6 +149,10 @@ brew "mongodb", restart_service: :changed
 brew "memcached", restart_service: :changed
 brew "elasticsearch", restart_service: :changed
 
+# Java Utilities
+brew "maven"
+brew "gradle"
+
 # Personal homebrew packages
 brew "scar"
 brew "tn"
@@ -159,6 +163,7 @@ cask "appcleaner"
 cask "atom"
 cask "cloudapp"
 cask "dropbox"
+cask "eclipse-ide"
 cask "firefox"
 cask "flux"
 cask "github-desktop"
@@ -167,6 +172,7 @@ cask "hocus-focus"
 cask "rowanj-gitx"
 cask "imageoptim"
 cask "iterm2"
+cask "java"
 cask "keybase"
 cask "mongotron"
 cask "paw"
