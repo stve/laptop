@@ -121,6 +121,18 @@ brew "the_silver_searcher"
 brew "watchman"
 brew "zsh"
 
+# Utilities
+brew "direnv"
+brew "exiftool"
+brew "ffmpeg"
+brew "icoutils"
+brew "jsonpp"
+brew "lame"
+brew "libicns"
+brew "terraform"
+brew "wrk"
+brew "youtube-dl"
+
 # PGP
 brew "gnupg2"
 brew "gpg-agent"
