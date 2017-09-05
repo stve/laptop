@@ -121,6 +121,10 @@ brew "the_silver_searcher"
 brew "watchman"
 brew "zsh"
 
+# PGP
+brew "gnupg2"
+brew "gpg-agent"
+
 # Heroku
 brew "heroku"
 
