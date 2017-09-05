@@ -149,6 +149,10 @@ brew "mongodb", restart_service: :changed
 brew "memcached", restart_service: :changed
 brew "elasticsearch", restart_service: :changed
 
+# Database Utilities
+brew "liquibase"
+brew "libmemcached"
+
 # Java Utilities
 brew "maven"
 brew "gradle"
