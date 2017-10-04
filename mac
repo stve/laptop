@@ -175,7 +175,6 @@ brew "gradle"
 
 # Personal homebrew packages
 brew "scar"
-brew "tn"
 
 # Homebrew-Cask
 cask "alfred"
