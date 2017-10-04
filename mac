@@ -157,7 +157,6 @@ brew "nvm"
 brew "rbenv"
 brew "ruby-build"
 brew "yarn"
-
 cask "java"
 
 # Databases
@@ -178,7 +177,7 @@ brew "gradle"
 # Personal homebrew packages
 brew "scar"
 
-# Homebrew-Cask
+# Applications
 cask "alfred"
 cask "appcleaner"
 cask "atom"
@@ -193,7 +192,6 @@ cask "hocus-focus"
 cask "rowanj-gitx"
 cask "imageoptim"
 cask "iterm2"
-cask "java"
 cask "keybase"
 cask "mongotron"
 cask "paw"
