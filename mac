@@ -83,9 +83,9 @@ esac
 
 gem_install_or_update() {
   if gem list "$1" --installed > /dev/null; then
-    gem update "$@" --no-rdoc --no-ri
+    gem update "$@" --no-document
   else
-    gem install "$@" --no-rdoc --no-ri
+    gem install "$@" --no-document
     rbenv rehash
   fi
 }
