@@ -251,4 +251,4 @@ if [ -f "$HOME/.laptop.local" ]; then
 fi
 
 # set default project directory
-mkdir -p "~/Projects"
+mkdir -p "$HOME/Projects"
