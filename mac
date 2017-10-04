@@ -158,6 +158,8 @@ brew "rbenv"
 brew "ruby-build"
 brew "yarn"
 
+cask "java"
+
 # Databases
 brew "postgres", restart_service: :changed
 brew "redis", restart_service: :changed
