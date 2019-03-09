@@ -113,6 +113,7 @@ brew update --force # https://github.com/Homebrew/brew/issues/1151
 brew bundle --file=- <<EOF
 tap "homebrew/services"
 tap "stve/formulae"
+tap "caskroom/fonts"
 
 # Unix
 brew "git"
@@ -199,6 +200,9 @@ cask "popsql"
 cask "postico"
 cask "quitter"
 cask "skype"
+
+# Fonts
+cask 'font-fira-code'
 
 # MacOS App Store
 mas "Amphetamine", id: 937984704
