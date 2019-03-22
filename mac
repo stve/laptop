@@ -187,7 +187,6 @@ cask "dropbox"
 cask "eclipse-ide"
 cask "firefox"
 cask "flux"
-cask "github-desktop"
 cask "google-chrome"
 cask "hocus-focus"
 cask "rowanj-gitx"
@@ -206,14 +205,18 @@ cask 'font-fira-code'
 # MacOS App Store
 mas "Amphetamine", id: 937984704
 mas "Aware", id: 1082170746
+mas "Battery Indicator", id: 1206020918
 mas "BetterSnapTool", id: 417375580
 mas "Byword", id: 420212497
+mas "Carbonize", id: 1451177988
+mas "Deliveries", id: 924726344
 mas "Marked 2", id: 890031187
 mas "Pixelmator", id: 407963104
 mas "Redacted", id: 984968384
 mas "Reeder", id: 880001334
 mas "Slack", id: 803453959
 mas "Soulver", id: 413965349
+mas "Textual", id: 1262957439
 mas "The Unarchiver", id: 425424353
 mas "Things3", id: 904280696
 mas "Tweetbot", id: 557168941
