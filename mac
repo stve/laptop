@@ -201,6 +201,7 @@ cask "skype"
 
 # Fonts
 cask 'font-fira-code'
+cask 'font-fira-mono-for-powerline'
 
 # MacOS App Store
 mas "Amphetamine", id: 937984704
