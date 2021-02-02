@@ -16,29 +16,200 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 
 set -e
 
-find_latest_ruby() {
-  asdf list-all ruby | grep -v - | tail -1 | sed -e 's/^ *//'
-}
+#######################################################################
+#
+# Rosetta
+#
+#######################################################################
 
-find_latest_node() {
-  asdf list-all nodejs | grep -v - | tail -1 | sed -e 's/^ *//'
-}
+setup_rosetta() {
+  OLDIFS=$IFS
 
-# shellcheck disable=SC2016
-HOMEBREW_PREFIX="/usr/local"
+  IFS='.' read osvers_major osvers_minor osvers_dot_version <<< "$(/usr/bin/sw_vers -productVersion)"
 
-if [ -d "$HOMEBREW_PREFIX" ]; then
-  if ! [ -r "$HOMEBREW_PREFIX" ]; then
-    sudo chown -R "$LOGNAME:admin" /usr/local
+  # restore IFS to previous state
+  IFS=$OLDIFS
+
+  # Check to see if the Mac is reporting itself as running macOS 11
+  if [[ ${osvers_major} -ge 11 ]]; then
+
+    # Check to see if the Mac needs Rosetta installed by testing the processor
+    processor=$(/usr/sbin/sysctl -n machdep.cpu.brand_string | grep -o "Intel")
+  
+    if [[ -n "$processor" ]]; then
+      echo "$processor processor installed. No need to install Rosetta."
+    else
+      # Check Rosetta LaunchDaemon. If no LaunchDaemon is found,
+      # perform a non-interactive install of Rosetta.    
+      if [[ ! -f "/Library/Apple/System/Library/LaunchDaemons/com.apple.oahd.plist" ]]; then
+          /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+        
+          if [[ $? -eq 0 ]]; then
+            echo "Rosetta has been successfully installed."
+          else
+            echo "Rosetta installation failed!"
+            exitcode=1
+          fi
+    
+      else
+        echo "Rosetta is already installed. Nothing to do."
+      fi
+    fi
+  else
+    echo "Mac is running macOS $osvers_major.$osvers_minor.$osvers_dot_version."
+    echo "No need to install Rosetta on this version of macOS."
   fi
-else
-  sudo mkdir "$HOMEBREW_PREFIX"
-  sudo chflags norestricted "$HOMEBREW_PREFIX"
-  sudo chown -R "$LOGNAME:admin" "$HOMEBREW_PREFIX"
-fi
+}
+
+#######################################################################
+#
+# Homebrew
+#
+#######################################################################
+
+
+install_homebrew() {
+  if ! command -v brew >/dev/null; then
+    fancy_echo "Installing Homebrew ..."
+      /bin/bash -c \ 
+        "$(curl -fsS https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      export PATH="/usr/local/bin:$PATH"
+  fi
+}
+
+configure_homebrew() {
+  # shellcheck disable=SC2016
+  HOMEBREW_PREFIX="/usr/local"
+
+  if [ -d "$HOMEBREW_PREFIX" ]; then
+    if ! [ -r "$HOMEBREW_PREFIX" ]; then
+      sudo chown -R "$LOGNAME:admin" /usr/local
+    fi
+  else
+    sudo mkdir "$HOMEBREW_PREFIX"
+    sudo chflags norestricted "$HOMEBREW_PREFIX"
+    sudo chown -R "$LOGNAME:admin" "$HOMEBREW_PREFIX"
+  fi
+
+  fancy_echo "Updating Homebrew formulae ..."
+  brew update --force # https://github.com/Homebrew/brew/issues/1151
+  brew bundle --file=- <<EOF
+  
+  tap "stve/formulae"
+  tap "homebrew/services"
+  tap "homebrew/cask-fonts"
+  tap "heroku/brew"
+
+  # Unix
+  brew "git"
+  brew "openssl"
+  brew "the_silver_searcher"
+  brew "zsh"
+
+  # Utilities
+  brew "direnv"
+  brew "exiftool"
+  brew "ffmpeg"
+  brew "lame"
+  brew "terraform"
+  brew "youtube-dl"
+
+  # PGP
+  brew "gpg2"
+
+  # Heroku
+  brew "heroku/brew/heroku"
+
+  # GitHub
+  brew "gh"
+
+  # Image manipulation
+  brew "imagemagick"
+
+  # MacOS
+  brew "mas"
+
+  # Programming languages and package managers
+  brew 'asdf'
+  brew "go"
+  brew "libyaml" # should come after openssl
+  brew "yarn"
+
+  # Databases
+  brew "postgres", restart_service: :changed
+  brew "redis", restart_service: :changed
+  brew "mongodb", restart_service: :changed
+  brew "memcached", restart_service: :changed
+  brew "elasticsearch", restart_service: :changed
+
+  # Database Utilities
+  brew "libmemcached"
+
+  # Personal homebrew packages
+  brew "scar"
+
+  # Applications
+  cask "alfred"
+  cask "appcleaner"
+  cask "atom"
+  cask "dropbox"
+  cask "firefox"
+  cask "flux"
+  cask "google-chrome"
+  cask "gpg-suite"
+  cask "hocus-focus"
+  cask "imageoptim"
+  cask "iterm2"
+  cask "keybase"
+  cask "oversight"
+  cask "paw"
+  cask "quitter"
+  cask "skype"
+  cask "tableplus"
+
+  # Fonts
+  cask 'font-fira-code'
+  cask 'font-fira-mono-for-powerline'
+
+  # MacOS App Store
+  mas "Amphetamine", id: 937984704
+  mas "Aware", id: 1082170746
+  mas "Battery Indicator", id: 1206020918
+  mas "BetterSnapTool", id: 417375580
+  mas "Byword", id: 420212497
+  mas "ColorSlurp", id: 1287239339
+  mas "Deliveries", id: 924726344
+  mas "HazeOver", id: 430798174
+  mas "Marked 2", id: 890031187
+  mas "Petrify", id: 1451177988
+  mas "Pixelmator", id: 407963104
+  mas "Redacted", id: 984968384
+  mas "Reeder", id: 880001334
+  mas "Slack", id: 803453959
+  mas "Soulver", id: 413965349
+  mas "Textual", id: 1262957439
+  mas "The Unarchiver", id: 425424353
+  mas "Things3", id: 904280696
+  mas "Tweetbot", id: 557168941
+  mas "Xcode", id: 497799835
+  mas "1Password", id: 443987910
+EOF
+}
+
+setup_homebrew() {
+  install_homebrew
+  configure_homebrew
+}
+
+#######################################################################
+#
+# ASDF
+#
+#######################################################################
 
 update_shell() {
-  local shell_path;
+  local shell_path
   shell_path="$(which zsh)"
 
   fancy_echo "Changing your shell to zsh ..."
@@ -49,176 +220,97 @@ update_shell() {
   sudo chsh -s "$shell_path" "$USER"
 }
 
-case "$SHELL" in
+setup_zshell() {
+  local shell_path="$SHELL"
+
+  case "$shell_path" in
   */zsh)
-    if [ "$(which zsh)" != '/usr/local/bin/zsh' ] ; then
+    if [ "$shell_path" != '/usr/local/bin/zsh' ] ; then
       update_shell
     fi
     ;;
   *)
     update_shell
     ;;
-esac
+  esac
+}
 
-gem_install_or_update() {
-  if gem list "$1" --installed > /dev/null; then
-    gem update "$@" --no-document
+
+#######################################################################
+#
+# ASDF
+#
+#######################################################################
+
+install_asdf_language() {
+  local language="$1"
+  local version
+  version="$(asdf latest "$language")"
+
+  if ! asdf list "$language" | grep -Fq "$version"; then
+    asdf install "$language" "$version"
+    asdf global "$language" "$version"
   else
-    gem install "$@" --no-document
-    rbenv rehash
+    asdf shell "$language" "$version"
   fi
 }
 
-if ! command -v brew >/dev/null; then
-  fancy_echo "Installing Homebrew ..."
-    curl -fsS \
-      'https://raw.githubusercontent.com/Homebrew/install/master/install' | ruby
+alias install_asdf_plugin=add_or_update_asdf_plugin
+add_or_update_asdf_plugin() {
+  local name="$1"
+  local url="$2"
 
-    export PATH="/usr/local/bin:$PATH"
-fi
+  if ! asdf plugin-list | grep -Fq "$name"; then
+    asdf plugin-add "$name" "$url"
+  else
+    asdf plugin-update "$name"
+  fi
+}
 
-if brew list | grep -Fq brew-cask; then
-  fancy_echo "Uninstalling old Homebrew-Cask ..."
-  brew uninstall --force brew-cask
-fi
+setup_asdf() {
+  ASDF_DIR=$(brew --prefix asdf)
+  source "$ASDF_DIR/asdf.sh"
+  add_or_update_asdf_plugin "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
+  add_or_update_asdf_plugin "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
+}
 
-fancy_echo "Updating Homebrew formulae ..."
-brew update --force # https://github.com/Homebrew/brew/issues/1151
-brew bundle --file=- <<EOF
-tap "homebrew/services"
-tap "stve/formulae"
-tap "caskroom/fonts"
+setup_ruby() {
+  install_asdf_language "ruby"
 
-# Unix
-brew "git"
-brew "openssl"
-brew "the_silver_searcher"
-brew "watchman"
-brew "zsh"
+  gem update --system
+  number_of_cores=$(sysctl -n hw.ncpu)
+  bundle config --global jobs $((number_of_cores - 1))
+}
 
-# Utilities
-brew "direnv"
-brew "exiftool"
-brew "ffmpeg"
-brew "icoutils"
-brew "jsonpp"
-brew "lame"
-brew "libicns"
-brew "terraform"
-brew "wrk"
-brew "youtube-dl"
+setup_nodejs() {
+  bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring" > /dev/null 2>&1
 
-# PGP
-brew "gnupg2"
-brew "gpg-agent"
+  install_asdf_language "nodejs"
+}
 
-# Heroku
-brew "heroku"
+#######################################################################
+#
+# Setup
+#
+#######################################################################
 
-# GitHub
-brew "hub"
+fancy_echo "Checking for and installing Rosetta..."
+setup_rosetta
 
-# Image manipulation
-brew "imagemagick"
+fancy_echo "Setup Homebrew..."
+setup_homebrew
 
-# MacOS
-brew "mas"
+fancy_echo "Setup zsh..."
+setup_zshell
 
-# Programming languages and package managers
-brew 'asdf'
-brew "go"
-brew "libyaml" # should come after openssl
-brew "yarn"
-cask "java"
+fancy_echo "Setup asdf..."
+setup_asdf
 
-# Databases
-brew "postgres", restart_service: :changed
-brew "redis", restart_service: :changed
-brew "mongodb", restart_service: :changed
-brew "memcached", restart_service: :changed
-brew "elasticsearch", restart_service: :changed
+fancy_echo "Setup Nodejs..."
+setup_nodejs
 
-# Database Utilities
-brew "liquibase"
-brew "libmemcached"
-
-# Java Utilities
-brew "maven"
-brew "gradle"
-
-# Personal homebrew packages
-brew "scar"
-
-# Applications
-cask "alfred"
-cask "appcleaner"
-cask "atom"
-cask "cloudapp"
-cask "dropbox"
-cask "eclipse-ide"
-cask "firefox"
-cask "flux"
-cask "google-chrome"
-cask "hocus-focus"
-cask "rowanj-gitx"
-cask "imageoptim"
-cask "iterm2"
-cask "keybase"
-cask "oversight"
-cask "paw"
-cask "postico"
-cask "quitter"
-cask "skype"
-
-# Fonts
-cask 'font-fira-code'
-cask 'font-fira-mono-for-powerline'
-
-# MacOS App Store
-mas "Amphetamine", id: 937984704
-mas "Aware", id: 1082170746
-mas "Battery Indicator", id: 1206020918
-mas "BetterSnapTool", id: 417375580
-mas "Byword", id: 420212497
-mas "Carbonize", id: 1451177988
-mas "Deliveries", id: 924726344
-mas "Marked 2", id: 890031187
-mas "Pixelmator", id: 407963104
-mas "Redacted", id: 984968384
-mas "Reeder", id: 880001334
-mas "Slack", id: 803453959
-mas "Soulver", id: 413965349
-mas "Textual", id: 1262957439
-mas "The Unarchiver", id: 425424353
-mas "Things3", id: 904280696
-mas "Tweetbot", id: 557168941
-mas "Xcode", id: 497799835
-mas "1Password", id: 443987910
-EOF
-
-fancy_echo "Update heroku binary..."
-brew unlink heroku
-brew link --force heroku
-
-fancy_echo "Setup asdf ..."
-asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
-
-fancy_echo "Configuring Ruby ..."
-asdf install ruby --definitions
-
-ruby_version="$(find_latest_ruby)"
-asdf install ruby ${ruby_version}
-
-gem update --system
-number_of_cores=$(sysctl -n hw.ncpu)
-bundle config --global jobs $((number_of_cores - 1))
-
-fancy_echo "Configuring Node ..."
-bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
-
-node_version="$(find_latest_node)"
-asdf install ruby ${node_version}
+fancy_echo "Setup Ruby..."
+setup_ruby
 
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "Running your customizations from ~/.laptop.local ..."
@@ -228,3 +320,5 @@ fi
 
 # set default project directory
 mkdir -p "$HOME/Projects"
+
+fancy_echo "Done! 💫"
