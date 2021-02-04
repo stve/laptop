@@ -167,6 +167,7 @@ configure_homebrew() {
   cask "quitter"
   cask "skype"
   cask "tableplus"
+  cask "visual-studio-code"
 
   # Fonts
   cask 'font-fira-code'
