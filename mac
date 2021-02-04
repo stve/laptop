@@ -12,7 +12,7 @@ fancy_echo() {
 }
 
 c1grep() {
-  grep "$@" || test $? = 1; }
+  grep "$@" || test $? = 1;
 }
 
 # shellcheck disable=SC2154
