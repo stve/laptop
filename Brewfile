@@ -41,9 +41,7 @@ brew "yarn"
 # Databases
 brew "postgres", restart_service: :changed
 brew "redis", restart_service: :changed
-brew "mongodb", restart_service: :changed
 brew "memcached", restart_service: :changed
-brew "elasticsearch", restart_service: :changed
 
 # Database Utilities
 brew "libmemcached"
