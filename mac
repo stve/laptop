@@ -200,6 +200,10 @@ setup_nodejs() {
 #
 #######################################################################
 
+fancy_echo "Setting up your laptop.."
+fancy_echo "Current shell: $SHELL"
+fancy_echo "Current PATH: $PATH"
+
 fancy_echo "Checking for and installing Rosetta..."
 setup_rosetta
 
