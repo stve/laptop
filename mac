@@ -115,23 +115,26 @@ setup_homebrew() {
 #######################################################################
 
 update_shell() {
-  local shell_path
-  shell_path="$(which zsh)"
+  local zsh_path="$(which zsh)"
 
   fancy_echo "Changing your shell to zsh ..."
   if ! grep "$shell_path" /etc/shells > /dev/null 2>&1 ; then
     fancy_echo "Adding '$shell_path' to /etc/shells"
     sudo sh -c "echo $shell_path >> /etc/shells"
   fi
-  sudo chsh -s "$shell_path" "$USER"
+  if ["$zsh_path" = "$SHELL" ]; then 
+    sudo chsh -s "$shell_path" "$USER"
+  fi
 }
 
 setup_zshell() {
   local shell_path="$SHELL"
+  local brew_prefix="$(brew --prefix)"
+  local brew_zsh="$brew_prefix/bin/zsh"
 
   case "$shell_path" in
   */zsh)
-    if [ "$shell_path" != '/usr/local/bin/zsh' ] ; then
+    if [ "$shell_path" != "$brew_zsh" ] ; then
       update_shell
     fi
     ;;
@@ -176,6 +179,7 @@ add_or_update_asdf_plugin() {
 setup_asdf() {
   ASDF_DIR=$(brew --prefix asdf)
   source "$ASDF_DIR/asdf.sh"
+
   add_or_update_asdf_plugin "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
   add_or_update_asdf_plugin "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
 }
