@@ -95,7 +95,7 @@ configure_homebrew() {
 
 install_apps() {
   fancy_echo "Installing App Store apps ..."
-    if brew bundle --file="$HOME/Masfile"; then
+  if brew bundle --file="$HOME/Masfile"; then
     fancy_echo "All apps were installed successfully."
   else
     fancy_echo "Some apps failed to install."
