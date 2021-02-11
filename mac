@@ -62,133 +62,50 @@ install_homebrew() {
       /bin/bash -c \ 
         "$(curl -fsS https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
+    if apple_m1; then
       export PATH="/usr/local/bin:$PATH"
+    else
+      source "$HOMEBREW_PREFIX/bin/brew shellenv"
+      export PATH="/opt/homebrew/bin:$PATH"
+    fi
+  else
+    fancy_echo "Homebrew already installed. Updating Homebrew ..."
+    brew update
   fi
 }
 
 configure_homebrew() {
-  # shellcheck disable=SC2016
-  HOMEBREW_PREFIX="/usr/local"
-
-  if [ -d "$HOMEBREW_PREFIX" ]; then
-    if ! [ -r "$HOMEBREW_PREFIX" ]; then
-      sudo chown -R "$LOGNAME:admin" /usr/local
-    fi
+  fancy_echo "Verifying the Homebrew installation ..."
+  if brew doctor; then
+    fancy_echo "Your Homebrew installation is good to go."
   else
-    sudo mkdir "$HOMEBREW_PREFIX"
-    sudo chflags norestricted "$HOMEBREW_PREFIX"
-    sudo chown -R "$LOGNAME:admin" "$HOMEBREW_PREFIX"
+    fancy_echo "Your Homebrew installation reported some errors or warnings."
+    fancy_echo "Review the Homebrew messages to see if any action is needed."
   fi
 
-  fancy_echo "Updating Homebrew formulae ..."
-  brew update --force # https://github.com/Homebrew/brew/issues/1151
-  brew bundle --file=- <<EOF
-  
-  tap "stve/formulae"
-  tap "homebrew/services"
-  tap "homebrew/cask-fonts"
-  tap "heroku/brew"
+  fancy_echo "Installing formulas and casks from the Brewfile ..."
+  if brew bundle --file="$HOME/Brewfile"; then
+    fancy_echo "All formulas and casks were installed successfully."
+  else
+    fancy_echo "Some formulas or casks failed to install."
+    fancy_echo "This is usually due to one of the Mac apps being already installed,"
+    fancy_echo "in which case, you can ignore these errors."
+  fi
+}
 
-  # Unix
-  brew "git"
-  brew "openssl"
-  brew "the_silver_searcher"
-  brew "zsh"
-
-  # Utilities
-  brew "direnv"
-  brew "exiftool"
-  brew "ffmpeg"
-  brew "lame"
-  brew "terraform"
-  brew "youtube-dl"
-
-  # PGP
-  brew "gpg2"
-
-  # Heroku
-  brew "heroku/brew/heroku"
-
-  # GitHub
-  brew "gh"
-
-  # Image manipulation
-  brew "imagemagick"
-
-  # MacOS
-  brew "mas"
-
-  # Programming languages and package managers
-  brew 'asdf'
-  brew "go"
-  brew "libyaml" # should come after openssl
-  brew "yarn"
-
-  # Databases
-  brew "postgres", restart_service: :changed
-  brew "redis", restart_service: :changed
-  brew "mongodb", restart_service: :changed
-  brew "memcached", restart_service: :changed
-  brew "elasticsearch", restart_service: :changed
-
-  # Database Utilities
-  brew "libmemcached"
-
-  # Personal homebrew packages
-  brew "scar"
-
-  # Applications
-  cask "alfred"
-  cask "appcleaner"
-  cask "atom"
-  cask "dropbox"
-  cask "firefox"
-  cask "flux"
-  cask "google-chrome"
-  cask "gpg-suite"
-  cask "hocus-focus"
-  cask "imageoptim"
-  cask "iterm2"
-  cask "keybase"
-  cask "oversight"
-  cask "paw"
-  cask "quitter"
-  cask "skype"
-  cask "tableplus"
-  cask "visual-studio-code"
-
-  # Fonts
-  cask 'font-fira-code'
-  cask 'font-fira-mono-for-powerline'
-
-  # MacOS App Store
-  mas "Amphetamine", id: 937984704
-  mas "Aware", id: 1082170746
-  mas "Battery Indicator", id: 1206020918
-  mas "BetterSnapTool", id: 417375580
-  mas "Byword", id: 420212497
-  mas "ColorSlurp", id: 1287239339
-  mas "Deliveries", id: 924726344
-  mas "HazeOver", id: 430798174
-  mas "Marked 2", id: 890031187
-  mas "Petrify", id: 1451177988
-  mas "Pixelmator", id: 407963104
-  mas "Redacted", id: 984968384
-  mas "Reeder", id: 880001334
-  mas "Slack", id: 803453959
-  mas "Soulver", id: 413965349
-  mas "Textual", id: 1262957439
-  mas "The Unarchiver", id: 425424353
-  mas "Things3", id: 904280696
-  mas "Tweetbot", id: 557168941
-  mas "Xcode", id: 497799835
-  mas "1Password", id: 443987910
-EOF
+install_apps() {
+  fancy_echo "Installing App Store apps ..."
+    if brew bundle --file="$HOME/Masfile"; then
+    fancy_echo "All apps were installed successfully."
+  else
+    fancy_echo "Some apps failed to install."
+  fi
 }
 
 setup_homebrew() {
   install_homebrew
   configure_homebrew
+  install_apps
 }
 
 #######################################################################
