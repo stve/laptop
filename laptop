@@ -1,0 +1,5 @@
+cd ~
+curl --remote-name https://raw.githubusercontent.com/stve/laptop/master/mac
+curl --remote-name https://raw.githubusercontent.com/stve/laptop/master/Brewfile
+curl --remote-name https://raw.githubusercontent.com/stve/laptop/master/Masfile
+/usr/bin/env bash mac 2>&1 | tee ~/laptop.log

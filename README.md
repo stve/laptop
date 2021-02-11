@@ -9,7 +9,7 @@ Install
 Download the script:
 
 ```sh
-curl --remote-name https://raw.githubusercontent.com/stve/laptop/master/mac
+curl --remote-name https://raw.githubusercontent.com/stve/laptop/master/laptop
 ```
 
 Original README can be found below.
